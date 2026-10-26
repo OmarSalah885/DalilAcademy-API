@@ -15,9 +15,14 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
                .HasMaxLength(200);
 
         builder.HasIndex(c => c.Title)
-               .IsUnique();                     // unique title at database level
+               .IsUnique();                     
 
         builder.Property(c => c.Price)
                .HasPrecision(10, 2);
+
+        builder.Property(c => c.Level)
+       .IsRequired()
+       .HasMaxLength(50)
+       .HasDefaultValue("Beginner");
     }
 }
