@@ -1,52 +1,102 @@
-# Dalil Academy API
+# Dalil Academy LMS API
 
-ASP.NET Core Web API built with **Onion Architecture** and **EF Core Code First** using PostgreSQL.
+A complete Learning Management System (LMS) backend built with **ASP.NET Core Web API** following **Onion Architecture**.
 
-## Solution Structure
+This project was developed step-by-step through a practical course covering real-world features from basic CRUD to external API integration.
 
-- **DalilAcademy.API** → Controllers, Program.cs, appsettings.json
-- **DalilAcademy.Core** → Entities + Interfaces
-- **DalilAcademy.Infra** → DbContext, Repositories, Services, Configurations, Migrations
+---
 
 ## Features
 
-- Onion Architecture + Dependency Injection
-- Full CRUD operations for Courses (GET, POST, PUT, DELETE)
-- Business rule: Course title must be unique
-- Switched from In-Memory Repository to PostgreSQL using EF Core
-- Code First Migrations
+- Full Onion Architecture (Core / Infrastructure / API)
+- Entity Framework Core + PostgreSQL (Code First + Migrations)
+- DTOs + FluentValidation
+- JWT Authentication & Authorization (Roles + Claims)
+- Global Exception Handling
+- File Upload (Course images)
+- External API Integration (Currency conversion using ExchangeRate-API)
+- Courses with nested Enrollments (projection – no N+1)
+- Clean separation of concerns
 
-## Technologies
+---
 
-- ASP.NET Core Web API
+## Tech Stack
+
+- ASP.NET Core 8
 - Entity Framework Core
 - PostgreSQL
-- Onion Architecture
-- Dependency Injection
+- FluentValidation
+- JWT Bearer Authentication
+- BCrypt (password hashing)
+- HttpClient (typed client for external APIs)
+- Swagger / OpenAPI
 
-## How to Run
+---
 
-1. Clone the repository
-2. Open the solution in Visual Studio
-3. Update the connection string in `appsettings.json` with your PostgreSQL password:
-   ```json
-   "DefaultConnection": "Host=localhost;Port=5432;Database=DalilAcademyDB;Username=postgres;Password=YOUR_PASSWORD"
-   ```
-4. Open **Package Manager Console**
-   - Set **Default project** = `DalilAcademy.Infra`
-5. Run the following command:
-   ```powershell
-   Update-Database
-   ```
-6. Set `DalilAcademy.API` as the Startup Project and run it
-7. Open Swagger and test the endpoints
+## Project Structure
 
-## API Endpoints
+```
+DalilAcademy/
+├── DalilAcademy.API/          → Controllers, Program.cs, Middleware
+├── DalilAcademy.Core/         → Entities, DTOs, Interfaces, Validators
+└── DalilAcademy.Infra/        → EF Core, Repositories, Services, External API
+```
 
-| Method | Endpoint              | Description               |
-|--------|-----------------------|---------------------------|
-| GET    | /api/Courses          | Get all courses           |
-| GET    | /api/Courses/{id}     | Get course by ID          |
-| POST   | /api/Courses          | Create a new course       |
-| PUT    | /api/Courses/{id}     | Update an existing course |
-| DELETE | /api/Courses/{id}     | Delete a course           |
+---
+
+## Getting Started
+
+### 1. Clone the repository
+```bash
+git clone <your-repo-url>
+cd DalilAcademy
+```
+
+### 2. Update connection string
+Open `appsettings.json` and set your PostgreSQL connection string.
+
+### 3. Set User Secrets (important)
+```bash
+cd DalilAcademy.API
+dotnet user-secrets set "ExchangeRate:ApiKey" "YOUR_EXCHANGERATE_API_KEY"
+dotnet user-secrets set "Jwt:Key" "YOUR_SUPER_SECRET_JWT_KEY_HERE"
+```
+
+### 4. Apply migrations
+```bash
+dotnet ef database update --project DalilAcademy.Infra --startup-project DalilAcademy.API
+```
+
+### 5. Run the API
+```bash
+dotnet run --project DalilAcademy.API
+```
+
+Swagger will open automatically at the root (`https://localhost:xxxx`).
+
+---
+
+## Main Endpoints
+
+| Method | Endpoint                        | Description                        | Auth     |
+|--------|---------------------------------|------------------------------------|----------|
+| POST   | `/api/auth/register`            | Register new user                  | No       |
+| POST   | `/api/auth/login`               | Login and get JWT                  | No       |
+| GET    | `/api/courses`                  | Get all courses                    | Optional |
+| GET    | `/api/courses/with-enrollments` | Courses + enrolled students        | Yes      |
+| POST   | `/api/currency/convert`         | Convert price using live rates     | Optional |
+| ...    | Other CRUD endpoints            | Courses, Students, Instructors...  | Yes      |
+
+---
+
+## Notes
+
+- API keys and JWT secrets are stored using **User Secrets** (never committed).
+- Course images are saved under `wwwroot/images` (ignored by git).
+- The currency conversion uses [ExchangeRate-API](https://www.exchangerate-api.com/).
+
+---
+
+## Course Progress
+
+This repository contains the work up to **Lecture 10** (External APIs + Capstone Task).

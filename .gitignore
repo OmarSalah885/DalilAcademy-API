@@ -1,33 +1,65 @@
-# Build results
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
 [Dd]ebug/
 [Rr]elease/
 x64/
 x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
 
-# Visual Studio
+## Visual Studio
 .vs/
+*.rsuser
+*.suo
 *.user
 *.userosscache
-*.suo
-*.cache
-*.vspscc
-*.vssscc
-.builds
-*.pidb
-*.svclog
-*.scc
+*.sln.docstates
 
-# NuGet
-*.nupkg
-**/[Pp]ackages/*
-!**/[Pp]ackages/build/
+## Rider / VS Code
+.idea/
+.vscode/
+*.swp
+*~
 
-# Others
+## ASP.NET & Secrets
+appsettings.Development.json
+appsettings.*.local.json
+**/appsettings.Development.json
+secrets.json
+*.pfx
+
+## User Secrets (just in case)
+**/Properties/launchSettings.json
+
+## Uploaded images / files
+wwwroot/images/
+wwwroot/uploads/
+wwwroot/files/
+
+## Database
 *.db
 *.db-shm
 *.db-wal
-appsettings.Development.json
+*.mdf
+*.ldf
+
+## OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+## Others
+*.log
+*.tmp
+*.temp
+node_modules/
