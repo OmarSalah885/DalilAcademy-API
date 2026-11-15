@@ -1,45 +1,78 @@
-﻿using DalilAcademy.Core.Entities;
+﻿using DalilAcademy.Core.DTOs;
+using DalilAcademy.Core.Entities;
+using DalilAcademy.Core.Exceptions;
+using DalilAcademy.Core.Mappings;
 using DalilAcademy.Core.Repository;
 using DalilAcademy.Core.Service;
+using FluentValidation;
 
 namespace DalilAcademy.Infra.Service;
 
-public class CourseService(ICourseRepository repo) : ICourseService
+public class CourseService(
+    ICourseRepository courseRepository,
+    IValidator<CreateCourseDto> createValidator,
+    IValidator<UpdateCourseDto> updateValidator,
+    IImageService images) : ICourseService
 {
-    public List<Course> GetAll() => repo.GetAll();
+    public async Task<List<CourseResponseDto>> GetAllAsync() => await courseRepository.GetAllAsync();
 
-    public Course? GetById(int id) => repo.GetById(id);
+    public async Task<PagedResult<CourseResponseDto>> GetPagedAsync(int page, int pageSize, decimal? minPrice = null, decimal? maxPrice = null)
+        => await courseRepository.GetPagedAsync(page, pageSize,minPrice,maxPrice);
 
-    public Course Create(Course course)
+    public async Task<int> GetCountAsync(decimal? minPrice = null, decimal? maxPrice = null)
     {
-        if (course.Price < 0)
-            throw new ArgumentException("Price cannot be negative.");
+        return await courseRepository.GetCountAsync(minPrice,maxPrice);
+    }
+    public async Task<CourseResponseDto> GetByIdAsync(int id)
+    {
+        var course = await courseRepository.GetByIdAsync(id)
+            ?? throw new NotFoundException($"Course with id {id} was not found.");
 
-        // Unique title rule
-        if (repo.GetAll().Any(c =>
-            c.Title.Equals(course.Title, StringComparison.OrdinalIgnoreCase)))
-        {
-            throw new ArgumentException("Course title must be unique.");
-        }
-
-        return repo.Create(course);
+        return course.ToDto();
     }
 
-    public Course? Update(int id, Course course)
+
+    public async Task<CourseResponseDto> CreateAsync(CreateCourseDto dto)
     {
-        if (course.Price < 0)
-            throw new ArgumentException("Price cannot be negative.");
+        await createValidator.ValidateAndThrowAsync(dto);
 
-        // Unique title rule (ignore the current course itself)
-        if (repo.GetAll().Any(c =>
-            c.Id != id &&
-            c.Title.Equals(course.Title, StringComparison.OrdinalIgnoreCase)))
-        {
-            throw new ArgumentException("Course title must be unique.");
-        }
+        var course = dto.ToEntity();
+        var created = await courseRepository.CreateAsync(course);
 
-        return repo.Update(id, course);
+        return created.ToDto();
     }
 
-    public bool Delete(int id) => repo.Delete(id);
+    public async Task UpdateAsync(int id, UpdateCourseDto dto)
+    {
+        await updateValidator.ValidateAndThrowAsync(dto);          
+
+        var existing = await courseRepository.GetByIdAsync(id)
+            ?? throw new NotFoundException($"Course with id {id} was not found.");
+
+        var oldImage = existing.ImageUrl;                          
+
+        existing.Title = dto.Title;
+        existing.Description = dto.Description;
+        existing.Price = dto.Price;
+        existing.Level = dto.Level;
+        existing.ImageUrl = dto.ImageUrl;
+
+        await courseRepository.UpdateAsync(existing);              
+
+        if (oldImage != dto.ImageUrl)                              
+            images.DeleteCourseImage(oldImage);                    
+    }
+
+    public async Task DeleteAsync(int id)
+    {
+        var course = await courseRepository.GetByIdAsync(id)
+            ?? throw new NotFoundException($"Course {id} was not found.");
+        await courseRepository.DeleteAsync(id);          // 1. database first
+        images.DeleteCourseImage(course.ImageUrl);       // 2. then the file
+    }
+
+    public async Task<List<CourseWithEnrollmentsDto>> GetAllWithEnrollmentsAsync()
+    {
+        return await courseRepository.GetAllWithEnrollmentsAsync();
+    }
 }

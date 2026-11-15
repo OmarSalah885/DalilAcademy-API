@@ -3,7 +3,7 @@ using DalilAcademy.Core.Repository;
 
 namespace DalilAcademy.Infra.Repository;
 
-public class CourseRepository : ICourseRepository
+public class CourseRepository // : ICourseRepository
 {
     private readonly List<Course> _courses = new();
 

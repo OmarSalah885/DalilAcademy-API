@@ -19,6 +19,14 @@ public class StudentConfiguration : IEntityTypeConfiguration<Student>
                .HasMaxLength(200);
 
         builder.HasIndex(s => s.Email)
-               .IsUnique();   
+               .IsUnique();
+
+        builder.HasIndex(s => s.UserId)
+               .IsUnique();
+
+        builder.HasOne(s => s.User)
+               .WithOne()
+               .HasForeignKey<Student>(s => s.UserId)
+               .OnDelete(DeleteBehavior.SetNull);
     }
 }
