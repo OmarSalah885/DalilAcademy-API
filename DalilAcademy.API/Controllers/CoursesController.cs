@@ -25,21 +25,24 @@ public class CoursesController(ICourseService courseService,IImageService images
     [FromQuery] int page = 1,
     [FromQuery] int pageSize = 10,
     [FromQuery] decimal? minPrice = null,
-    [FromQuery] decimal? maxPrice = null)
+    [FromQuery] decimal? maxPrice = null,
+    [FromQuery] string? search = null)
     {
         page = Math.Max(1, page);
         pageSize = Math.Clamp(pageSize, 1, 50);
 
-        var result = await courseService.GetPagedAsync(page, pageSize, minPrice, maxPrice);
+        var result = await courseService.GetPagedAsync(page, pageSize, minPrice, maxPrice, search);
         return Ok(result);
     }
+
     [HttpGet("count")]
     [AllowAnonymous]
     public async Task<ActionResult<int>> GetCoursesCount(
-    [FromQuery] decimal? minPrice = null,
-    [FromQuery] decimal? maxPrice = null)
+        [FromQuery] decimal? minPrice = null,
+        [FromQuery] decimal? maxPrice = null,
+        [FromQuery] string? search = null)
     {
-        var count = await courseService.GetCountAsync(minPrice, maxPrice);
+        var count = await courseService.GetCountAsync(minPrice, maxPrice, search);
         return Ok(count);
     }
 
@@ -91,5 +94,13 @@ public class CoursesController(ICourseService courseService,IImageService images
     {
         var result = await courseService.GetAllWithEnrollmentsAsync();
         return Ok(result);
+    }
+
+    [HttpGet("{courseId:int}/students")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<List<StudentResponseDto>>> GetPaidStudents(int courseId)
+    {
+        var students = await courseService.GetPaidStudentsAsync(courseId);
+        return Ok(students);
     }
 }

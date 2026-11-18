@@ -1,4 +1,6 @@
-﻿namespace DalilAcademy.Core.Entities;
+﻿using DalilAcademy.Core.Enums;
+
+namespace DalilAcademy.Core.Entities;
 
 public class Enrollment
 {
@@ -11,4 +13,7 @@ public class Enrollment
     public Course Course { get; set; } = null!;
 
     public DateTime EnrolledAt { get; set; } = DateTime.UtcNow;
+
+    public EnrollmentStatus Status { get; set; } = EnrollmentStatus.Pending;
+    public ICollection<Payment> Payments { get; set; } = new List<Payment>();
 }

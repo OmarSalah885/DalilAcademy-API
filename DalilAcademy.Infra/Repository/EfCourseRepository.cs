@@ -1,5 +1,6 @@
 ﻿using DalilAcademy.Core.DTOs;
 using DalilAcademy.Core.Entities;
+using DalilAcademy.Core.Enums;
 using DalilAcademy.Core.Exceptions;
 using DalilAcademy.Core.Repository;
 using DalilAcademy.Infra.Data;
@@ -15,20 +16,12 @@ public class EfCourseRepository(AppDbContext db) : ICourseRepository
         return await db.Courses
             .AsNoTracking()
             .Select(c => new CourseResponseDto(
-                c.Id,
-                c.Title,
-                c.Description,
-                c.Price,
-                c.Level,
-                c.Instructor!.FullName,
-                c.ImageUrl))
+                    c.Id, c.Title, c.Description, c.Price, c.Level,
+                    c.Instructor!.FullName, c.ImageUrl, c.MaxStudents))
             .ToListAsync();
     }
 
-    public async Task<PagedResult<CourseResponseDto>> GetPagedAsync(
-    int page, int pageSize,
-    decimal? minPrice = null,
-    decimal? maxPrice = null)
+    private IQueryable<Course> ApplyFilters(decimal? minPrice, decimal? maxPrice, string? search)
     {
         var query = db.Courses.AsNoTracking();
 
@@ -37,6 +30,18 @@ public class EfCourseRepository(AppDbContext db) : ICourseRepository
 
         if (maxPrice.HasValue)
             query = query.Where(c => c.Price <= maxPrice.Value);
+
+        if (!string.IsNullOrWhiteSpace(search))
+            query = query.Where(c => EF.Functions.ILike(c.Title, $"%{search}%")); // case-insensitive in PostgreSQL
+
+        return query;
+    }
+
+    public async Task<PagedResult<CourseResponseDto>> GetPagedAsync(
+        int page, int pageSize,
+        decimal? minPrice = null, decimal? maxPrice = null, string? search = null)
+    {
+        var query = ApplyFilters(minPrice, maxPrice, search);
 
         var total = await query.CountAsync();
 
@@ -45,29 +50,15 @@ public class EfCourseRepository(AppDbContext db) : ICourseRepository
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(c => new CourseResponseDto(
-                c.Id,
-                c.Title,
-                c.Description,
-                c.Price,
-                c.Level,
-                c.Instructor!.FullName,
-                c.ImageUrl))
+                    c.Id, c.Title, c.Description, c.Price, c.Level,
+                    c.Instructor!.FullName, c.ImageUrl, c.MaxStudents))
             .ToListAsync();
 
         return new PagedResult<CourseResponseDto>(items, page, pageSize, total);
     }
 
-    public Task<int> GetCountAsync(decimal? minPrice = null, decimal? maxPrice = null)
-    {
-        var query = db.Courses.AsNoTracking();
-
-        if (minPrice.HasValue)
-            query = query.Where(c => c.Price >= minPrice.Value);
-        if (maxPrice.HasValue)
-            query = query.Where(c => c.Price <= maxPrice.Value);
-
-        return query.CountAsync();
-    }
+    public Task<int> GetCountAsync(decimal? minPrice = null, decimal? maxPrice = null, string? search = null)
+        => ApplyFilters(minPrice, maxPrice, search).CountAsync();
     public async Task<Course?> GetByIdAsync(int id)
     {
         return await db.Courses
@@ -130,6 +121,19 @@ public class EfCourseRepository(AppDbContext db) : ICourseRepository
                     e.EnrolledAt
                 )).ToList()
             ))
+            .ToListAsync();
+    }
+    public async Task<List<StudentResponseDto>> GetPaidStudentsAsync(int courseId)
+    {
+        return await db.Enrollments
+            .AsNoTracking()
+            .Where(e => e.CourseId == courseId && e.Status == EnrollmentStatus.Paid)
+            .Select(e => new StudentResponseDto(
+                e.Student.Id,
+                e.Student.FullName,
+                e.Student.Email
+            ))
+            .Distinct()
             .ToListAsync();
     }
 }

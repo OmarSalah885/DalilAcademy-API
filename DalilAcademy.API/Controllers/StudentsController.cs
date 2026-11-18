@@ -71,7 +71,6 @@ public class StudentsController(IStudentService studentService) : ControllerBase
 
     [HttpDelete("{id:int}")]
 
-
     public async Task<IActionResult> Delete(int id)
     {
         await studentService.DeleteAsync(id);

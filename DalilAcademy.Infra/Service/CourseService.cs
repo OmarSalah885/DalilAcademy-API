@@ -16,13 +16,12 @@ public class CourseService(
 {
     public async Task<List<CourseResponseDto>> GetAllAsync() => await courseRepository.GetAllAsync();
 
-    public async Task<PagedResult<CourseResponseDto>> GetPagedAsync(int page, int pageSize, decimal? minPrice = null, decimal? maxPrice = null)
-        => await courseRepository.GetPagedAsync(page, pageSize,minPrice,maxPrice);
+    public async Task<PagedResult<CourseResponseDto>> GetPagedAsync(
+    int page, int pageSize, decimal? minPrice = null, decimal? maxPrice = null, string? search = null)
+    => await courseRepository.GetPagedAsync(page, pageSize, minPrice, maxPrice, search?.Trim());
 
-    public async Task<int> GetCountAsync(decimal? minPrice = null, decimal? maxPrice = null)
-    {
-        return await courseRepository.GetCountAsync(minPrice,maxPrice);
-    }
+    public async Task<int> GetCountAsync(decimal? minPrice = null, decimal? maxPrice = null, string? search = null)
+        => await courseRepository.GetCountAsync(minPrice, maxPrice, search?.Trim());
     public async Task<CourseResponseDto> GetByIdAsync(int id)
     {
         var course = await courseRepository.GetByIdAsync(id)
@@ -56,6 +55,7 @@ public class CourseService(
         existing.Price = dto.Price;
         existing.Level = dto.Level;
         existing.ImageUrl = dto.ImageUrl;
+        existing.MaxStudents = dto.MaxStudents;
 
         await courseRepository.UpdateAsync(existing);              
 
@@ -74,5 +74,13 @@ public class CourseService(
     public async Task<List<CourseWithEnrollmentsDto>> GetAllWithEnrollmentsAsync()
     {
         return await courseRepository.GetAllWithEnrollmentsAsync();
+    }
+
+    public async Task<List<StudentResponseDto>> GetPaidStudentsAsync(int courseId)
+    {
+        _ = await courseRepository.GetByIdAsync(courseId)
+            ?? throw new NotFoundException($"Course with id {courseId} was not found.");
+
+        return await courseRepository.GetPaidStudentsAsync(courseId);
     }
 }

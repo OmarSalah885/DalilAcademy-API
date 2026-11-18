@@ -11,7 +11,8 @@ public static class EnrollmentMappings
         enrollment.Student?.FullName ?? string.Empty,
         enrollment.CourseId,
         enrollment.Course?.Title ?? string.Empty,
-        enrollment.EnrolledAt);
+        enrollment.EnrolledAt,
+        enrollment.Status);
 
     public static Enrollment ToEntity(this CreateEnrollmentDto dto) => new()
     {

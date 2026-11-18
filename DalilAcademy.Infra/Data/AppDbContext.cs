@@ -14,6 +14,7 @@ public class AppDbContext : DbContext
     public DbSet<Student> Students => Set<Student>();
     public DbSet<Enrollment> Enrollments => Set<Enrollment>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<Payment> Payments { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

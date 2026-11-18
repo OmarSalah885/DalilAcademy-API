@@ -8,8 +8,11 @@ public class Course
     public decimal Price { get; set; }
     public string Level { get; set; } = "Beginner";
     public string? ImageUrl { get; set; }
+    public int? MaxStudents { get; set; }
     public int InstructorId { get; set; }
     public Instructor Instructor { get; set; } = null!;
+
+
 
     public List<Enrollment> Enrollments { get; set; } = [];
 }

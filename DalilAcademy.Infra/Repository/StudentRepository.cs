@@ -1,5 +1,6 @@
 ﻿using DalilAcademy.Core.DTOs;
 using DalilAcademy.Core.Entities;
+using DalilAcademy.Core.Enums;
 using DalilAcademy.Core.Exceptions;
 using DalilAcademy.Core.Repository;
 using DalilAcademy.Infra.Data;
@@ -42,7 +43,8 @@ public class StudentRepository(AppDbContext db) : IStudentRepository
     {
         return await db.Enrollments
             .AsNoTracking()
-            .Where(e => e.Student.UserId == userId)
+            .Where(e => e.Student.UserId == userId
+                     && e.Status == EnrollmentStatus.Paid)
             .Select(e => new CourseResponseDto(
                 e.Course.Id,
                 e.Course.Title,

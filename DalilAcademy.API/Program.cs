@@ -6,12 +6,13 @@ using DalilAcademy.Infra.Data;
 using DalilAcademy.Infra.Repositorie;
 using DalilAcademy.Infra.Repository;
 using DalilAcademy.Infra.Service;
+using DalilAcademy.Infra.Payments;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Microsoft.OpenApi;
+using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -68,6 +69,28 @@ builder.Services
     });
 
 builder.Services.AddAuthorization();
+
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
+builder.Services.Configure<PayPalSettings>(
+    builder.Configuration.GetSection("PayPal"));
+
+builder.Services.AddHttpClient<IPaymentGateway, PayPalPaymentGateway>(client =>
+{
+    var baseUrl = builder.Configuration["PayPal:BaseUrl"]
+        ?? throw new InvalidOperationException("PayPal:BaseUrl is missing.");
+
+    if (!baseUrl.EndsWith('/'))
+        baseUrl += "/";
+
+    client.BaseAddress = new Uri(baseUrl);
+});
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();

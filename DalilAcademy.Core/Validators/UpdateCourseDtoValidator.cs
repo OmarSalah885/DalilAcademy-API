@@ -26,5 +26,9 @@ public class UpdateCourseDtoValidator : AbstractValidator<UpdateCourseDto>
         RuleFor(x => x.ImageUrl)
         .Must(url => url is null || (url.StartsWith("/images/courses/") && !url.Contains("..")))
         .WithMessage("ImageUrl must come from the upload endpoint.");
+
+        RuleFor(x => x.MaxStudents)
+            .GreaterThan(0)
+            .When(x => x.MaxStudents.HasValue);
     }
 }

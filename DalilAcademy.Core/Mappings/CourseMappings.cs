@@ -12,7 +12,8 @@ public static class CourseMappings
         course.Price,
         course.Level,
         course.Instructor?.FullName,
-        course.ImageUrl);
+        course.ImageUrl,
+        course.MaxStudents);
 
     public static Course ToEntity(this CreateCourseDto dto) => new()
     {
@@ -21,6 +22,7 @@ public static class CourseMappings
         Price = dto.Price,
         Level = dto.Level,
         InstructorId = dto.InstructorId,
-        ImageUrl= dto.ImageUrl
+        ImageUrl= dto.ImageUrl,
+        MaxStudents = dto.MaxStudents
     };
 }

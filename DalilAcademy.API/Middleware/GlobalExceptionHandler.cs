@@ -22,7 +22,7 @@ public class GlobalExceptionHandler(
             UnauthorizedException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
             InvalidFileException => (StatusCodes.Status400BadRequest, "Invalid file"),
             HttpRequestException => (StatusCodes.Status502BadGateway, "External service unavailable"),
-
+            PaymentFailedException => (StatusCodes.Status400BadRequest, exception.Message),
             _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred")
         };
 
@@ -36,7 +36,8 @@ public class GlobalExceptionHandler(
             Status = statusCode,
             Title = title,
             Detail = exception is NotFoundException or ConflictException
-            or UnauthorizedAccessException or InvalidFileException or HttpRequestException ? exception.Message : null
+            or UnauthorizedAccessException or InvalidFileException 
+            or HttpRequestException or PaymentFailedException ? exception.Message : null
         };
 
         // Special handling for FluentValidation errors

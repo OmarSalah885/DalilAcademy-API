@@ -1,6 +1,10 @@
-﻿namespace DalilAcademy.Core.DTOs;
+﻿using DalilAcademy.Core.Enums;
+
+namespace DalilAcademy.Core.DTOs;
 
 public record CreateEnrollmentDto(int StudentId, int CourseId);
+
+public record UpdateEnrollmentDto(int StudentId, int CourseId);
 
 public record EnrollmentResponseDto(
     int Id,
@@ -8,4 +12,5 @@ public record EnrollmentResponseDto(
     string StudentName,
     int CourseId,
     string CourseTitle,
-    DateTime EnrolledAt);
+    DateTime EnrolledAt,
+    EnrollmentStatus Status);
